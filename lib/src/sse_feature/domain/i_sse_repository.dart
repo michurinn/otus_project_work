@@ -8,4 +8,6 @@ abstract class ISseRepository {
     required String url,
     required Map<String, String> header,
   });
+
+  void cancelSseStream();
 }

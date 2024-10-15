@@ -11,7 +11,7 @@ class NavigationState {
     tab = Tabs.second;
   }
 
-  void goToMain() {
+  void goToSsh() {
     tab = Tabs.firest;
   }
 }

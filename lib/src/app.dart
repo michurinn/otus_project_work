@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 ///import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:new_flutter_template/src/navigator/navigation_state.dart';
 import 'package:new_flutter_template/src/navigator/router.dart';
+import 'package:new_flutter_template/src/theme/app_colors.dart';
 
 import 'settings/settings_controller.dart';
 
@@ -34,8 +36,26 @@ class MyApp extends StatelessWidget {
           supportedLocales: const [
             Locale('en', ''), // English, no country code
           ],
-          theme: ThemeData(),
-          darkTheme: ThemeData.dark(),
+          theme: ThemeData(
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              selectedItemColor: AppColors.amber,
+            ),
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+              },
+            ),
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: OpenUpwardsPageTransitionsBuilder(),
+              },
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              selectedItemColor: AppColors.amber,
+            ),
+          ),
           themeMode: settingsController.themeMode,
         );
       },

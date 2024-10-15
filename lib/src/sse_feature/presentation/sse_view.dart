@@ -11,8 +11,9 @@ import 'package:new_flutter_template/src/sse_feature/presentation/bloc/sse_state
 class SseView extends StatelessWidget {
   SseView({super.key});
 
-  static const routeName = '/http_request_view';
-  final TextEditingController _controller = TextEditingController();
+  static const routeName = '/sse_view';
+  final TextEditingController _controller =
+      TextEditingController(text: 'https://sse.dev/test?interval=5');
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,9 +51,10 @@ class SseView extends StatelessWidget {
                       try {
                         context.read<SseBloc>().add(
                               SseSubscribeEvent(
-                                  sseRequestType: SSERequestType.GET,
-                                  url: uri!.origin,
-                                  header: {}),
+                                sseRequestType: SSERequestType.GET,
+                                url: uri!.origin,
+                                header: {},
+                              ),
                             );
                       } on Object catch (_) {
                         debugPrint(
@@ -66,41 +68,64 @@ class SseView extends StatelessWidget {
                 ),
               ),
             ),
-            SliverFillRemaining(
-                child: BlocSelector<SseBloc, SseState, SseSubscribedState?>(
-              selector: (state) {
-                if (state is SseSubscribedState) {
-                  return SseSubscribedState(
-                      data: state.data, event: state.event, id: state.id);
-                } else if (state is SseErrorState) {
-                  return SseSubscribedState(
-                      data: 'Error',
-                      event: 'SsZe error message',
-                      id: state.message);
-                } else {
-                  return null;
-                }
-              },
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    context.read<SseBloc>().add(
+                          SseCancelAllConnectionsEvent(),
+                        );
+                  },
+                  label: const Icon(
+                    Icons.cancel_outlined,
+                  ),
+                ),
+              ),
+            ),
+            SliverFillRemaining(child: BlocBuilder<SseBloc, SseState>(
               builder: (context, state) {
-                return state is SseSubscribedState
-                    ? Column(
-                        children: [
-                          Text(
-                            state.id.toString(),
-                          ),
-                          Text(
-                            state.event ?? '',
-                          ),
-                          Text(
-                            state.data.toString(),
-                          ),
-                        ],
-                      )
-                    : const Column(
-                        children: [
-                          Text('Null state data'),
-                        ],
-                      );
+                return switch (state) {
+                  SseSubscribedState(:final sseModel) => Column(
+                      children: [
+                        Text(
+                          sseModel?.id ?? '',
+                        ),
+                        Text(
+                          sseModel?.event ?? '',
+                        ),
+                        Text(
+                          sseModel?.data ?? '',
+                        ),
+                      ],
+                    ),
+                  SseConnectionClosedState(:final sseModel) => sseModel == null
+                      ? const Text(
+                          'The connection with Sse has been closed, no last data',
+                        )
+                      : Column(
+                          children: [
+                            const Text(
+                              'The connection with Sse has been closed, the last data is:',
+                            ),
+                            Text(
+                              sseModel.id ?? '',
+                            ),
+                            Text(
+                              sseModel.event ?? '',
+                            ),
+                            Text(
+                              sseModel.data ?? '',
+                            ),
+                          ],
+                        ),
+                  SseLoadingState() => const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    ),
+                  SseErrorState(:final message) => Text(message),
+                  SseInitialState() =>
+                    const Text('You would see Sse events here'),
+                };
               },
             ))
           ],
@@ -108,13 +133,12 @@ class SseView extends StatelessWidget {
       ),
       bottomNavigationBar: BottomNavigationBar(
           onTap: (value) => switch (value) {
-                0 =>
-                  (Router.of(context).routerDelegate as AppRouter).goToMain(),
+                0 => (Router.of(context).routerDelegate as AppRouter).goToSsh(),
                 1 => (Router.of(context).routerDelegate as AppRouter).goToSse(),
                 2 => (Router.of(context).routerDelegate as AppRouter).goToApi(),
-                _ =>
-                  (Router.of(context).routerDelegate as AppRouter).goToMain(),
+                _ => (Router.of(context).routerDelegate as AppRouter).goToSsh(),
               },
+          currentIndex: 1,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(
