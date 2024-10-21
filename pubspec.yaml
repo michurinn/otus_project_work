@@ -23,6 +23,8 @@ dependencies:
   http: ^1.2.2
   provider: ^6.1.2
   sensors_plus: 6.0.1
+  hello: 
+    path: hello
 
 dev_dependencies:
   flutter_test:
