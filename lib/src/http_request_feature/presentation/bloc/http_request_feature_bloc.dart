@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_event.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_state.dart';
+import 'package:new_flutter_template/src/share/extesnions/uri_extension.dart';
 import 'package:new_flutter_template/src/share/typedefs/typedef_json.dart';
 
 class HttpRequestFeatureBloc
@@ -15,12 +16,16 @@ class HttpRequestFeatureBloc
             headers: null,
             userName: null,
             password: null,
+            queryParams: null,
+            body: null,
           ),
         ) {
     on<GetDataEvent>(_handleGetRequest);
     on<PostDataEvent>(_handlePostRequest);
-    on<SetDataEvent>(_handleSetDataEvent);
+    on<SetHeadersEvent>(_handleSeHeadersEvent);
+    on<SetQueryParamsEvent>(_handleSetQueryParamsEvent);
     on<SetAuthDataEvent>(_handleSetAuthDataEvent);
+    on<SetBodyDataEvent>(_handleSetBodyDataEvent);
   }
 
   // Handling Set Basic Auth info
@@ -31,13 +36,48 @@ class HttpRequestFeatureBloc
         headers: state.headers,
         password: event.password,
         userName: event.userName,
+        queryParams: state.queryParams,
+        body: state.body,
+      ),
+    );
+  }
+
+  // Handling Set Body info
+  Future<void> _handleSetBodyDataEvent(
+      SetBodyDataEvent event, Emitter<HttpRequestFeatureState> emit) async {
+    emit(
+      APIReady(
+        headers: state.headers,
+        password: state.password,
+        userName: state.userName,
+        queryParams: state.queryParams,
+        body: event.body,
+      ),
+    );
+  }
+
+  // Handling Set request Query
+  Future<void> _handleSetQueryParamsEvent(
+      SetQueryParamsEvent event, Emitter<HttpRequestFeatureState> emit) async {
+    /// Modify headers with the actual event
+    var newQuery = state.queryParams ?? <String, Json>{};
+    for (var element in event.parameters.keys) {
+      newQuery[element] = event.parameters[element] ?? {};
+    }
+    emit(
+      APIReady(
+        headers: state.headers,
+        password: state.password,
+        userName: state.userName,
+        queryParams: newQuery,
+        body: state.body,
       ),
     );
   }
 
   // Handling Set request Headers
-  Future<void> _handleSetDataEvent(
-      SetDataEvent event, Emitter<HttpRequestFeatureState> emit) async {
+  Future<void> _handleSeHeadersEvent(
+      SetHeadersEvent event, Emitter<HttpRequestFeatureState> emit) async {
     /// Modify headers with the actual event
     var newHeaders = state.headers ?? <String, Json>{};
     for (var element in event.parameters.keys) {
@@ -48,6 +88,8 @@ class HttpRequestFeatureBloc
         headers: newHeaders,
         password: state.password,
         userName: state.userName,
+        queryParams: state.queryParams,
+        body: state.body,
       ),
     );
   }
@@ -55,12 +97,15 @@ class HttpRequestFeatureBloc
   // Handling GET request
   Future<void> _handleGetRequest(
       GetDataEvent event, Emitter<HttpRequestFeatureState> emit) async {
-    final headers = (state is APIReady) ? (state as APIReady).headers : null;
+    final headers = state.headers;
+    final query = state.queryParams;
     emit(
       APILoading(
         headers: state.headers,
         userName: state.userName,
         password: state.password,
+        queryParams: state.queryParams,
+        body: state.body,
       ),
     );
     final Map<String, String> calculatedHeaders = headers == null
@@ -71,9 +116,17 @@ class HttpRequestFeatureBloc
               data.values.first.toString(),
             ),
           );
+    final Map<String, String> calculatedQueries = query == null
+        ? {}
+        : query.map(
+            (_, data) => MapEntry(
+              data.keys.first,
+              data.values.first.toString(),
+            ),
+          );
     try {
       Map<String, String> basicAuth = {
-        'authorization': 'Basic ${base64.encode(
+        'Authorization': 'Basic ${base64.encode(
           utf8.encode(
             '${state.userName}:${state.password}',
           ),
@@ -84,7 +137,7 @@ class HttpRequestFeatureBloc
       );
 
       final response = await http.get(
-        event.url,
+        event.url..addQueryParams(calculatedQueries),
         headers: calculatedHeaders..addAll(basicAuth),
       );
 
@@ -98,6 +151,8 @@ class HttpRequestFeatureBloc
             statusReason: response.reasonPhrase,
             password: state.password,
             userName: state.userName,
+            queryParams: state.queryParams,
+            body: state.body,
           ),
         );
       } else {
@@ -107,6 +162,8 @@ class HttpRequestFeatureBloc
             message: 'Failed to fetch data: ${response.statusCode}',
             password: state.password,
             userName: state.userName,
+            queryParams: state.queryParams,
+            body: state.body,
           ),
         );
       }
@@ -117,6 +174,8 @@ class HttpRequestFeatureBloc
           message: 'Error: $e',
           password: state.password,
           userName: state.userName,
+          queryParams: state.queryParams,
+          body: state.body,
         ),
       );
     }
@@ -125,18 +184,51 @@ class HttpRequestFeatureBloc
   // Handling POST request
   Future<void> _handlePostRequest(
       PostDataEvent event, Emitter<HttpRequestFeatureState> emit) async {
+    final headers = (state is APIReady) ? (state as APIReady).headers : null;
+    final query = (state is APIReady) ? (state as APIReady).queryParams : null;
     emit(
       APILoading(
         headers: state.headers,
         userName: state.userName,
         password: state.password,
+        queryParams: state.queryParams,
+        body: state.body,
       ),
     );
+    final Map<String, String> calculatedHeaders = headers == null
+        ? {}
+        : headers.map(
+            (_, data) => MapEntry(
+              data.keys.first,
+              data.values.first.toString(),
+            ),
+          );
+    final Map<String, String> calculatedQueries = query == null
+        ? {}
+        : query.map(
+            (_, data) => MapEntry(
+              data.keys.first,
+              data.values.first.toString(),
+            ),
+          );
     try {
+      Map<String, String> basicAuth = {
+        'Authorization': 'Basic ${base64.encode(
+          utf8.encode(
+            '${state.userName}:${state.password}',
+          ),
+        )}'
+      };
+      debugPrint(
+        basicAuth.toString(),
+      );
+
       final response = await http.post(
-        event.url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(event.body),
+        event.url..addQueryParams(calculatedQueries),
+        headers: calculatedHeaders
+          ..addAll(basicAuth)
+          ..addAll({'content-type': 'application/x-www-form-urlencoded'}),
+        body: jsonDecode(state.body!),
       );
 
       if (response.statusCode == 201) {
@@ -149,6 +241,8 @@ class HttpRequestFeatureBloc
             statusReason: response.reasonPhrase,
             password: state.password,
             userName: state.userName,
+            queryParams: state.queryParams,
+            body: state.body,
           ),
         );
       } else {
@@ -158,6 +252,8 @@ class HttpRequestFeatureBloc
             password: state.password,
             userName: state.userName,
             message: 'Failed to post data: ${response.statusCode}',
+            queryParams: state.queryParams,
+            body: state.body,
           ),
         );
       }
@@ -168,6 +264,8 @@ class HttpRequestFeatureBloc
           message: 'Error: $e',
           password: state.password,
           userName: state.userName,
+          queryParams: state.queryParams,
+          body: state.body,
         ),
       );
     }

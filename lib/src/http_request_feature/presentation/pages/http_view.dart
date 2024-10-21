@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_bloc.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_event.dart';
@@ -30,10 +31,17 @@ class _HttpRequestViewState extends State<HttpRequestView>
   late final TabController _controllerTab;
   late final TextEditingController _controller;
   late final TabController _requestSettingsController;
-
+  late final BasicMessageChannel c;
   @override
   void initState() {
     super.initState();
+    c = const BasicMessageChannel(
+      'flutter/lifecycle',
+      StringCodec(),
+    );
+    c.send('RESUMED').then(
+          (val) => debugPrint(val),
+        );
     _controller =
         TextEditingController(text: 'https://api.restful-api.dev/objects');
     _controllerTab =
@@ -81,11 +89,11 @@ class _HttpRequestViewState extends State<HttpRequestView>
                   .map(
                     (req) => AnimatedTabWidget(
                       tabController: _controllerTab,
-                      isActive: true,
                       tab: MapEntry(
                         RequestTypeEnum.values.indexOf(req),
                         req.name.toUpperCase(),
                       ),
+                      isActive: false,
                     ),
                   )
                   .toList(),
@@ -98,42 +106,53 @@ class _HttpRequestViewState extends State<HttpRequestView>
           ),
           SliverAppBar(
             pinned: true,
-            title: TabBar(
-              tabAlignment: TabAlignment.start,
-              indicatorColor: Colors.greenAccent,
-              splashFactory: NoSplash.splashFactory,
-              isScrollable: true,
-              labelPadding: const EdgeInsets.only(
-                bottom: 12.0,
-                left: 12.0,
-                right: 12.0,
-              ),
-              unselectedLabelColor: Colors.grey,
-              controller: _requestSettingsController,
-              tabs: [
-                AnimatedTabWidget(
-                    tabController: _requestSettingsController,
-                    tab: const MapEntry(0, 'Basic Auth'),
-                    isActive: true),
-                AnimatedTabWidget(
-                    tabController: _requestSettingsController,
-                    tab: const MapEntry(1, 'Headers'),
-                    isActive: true),
-                AnimatedTabWidget(
-                    tabController: _requestSettingsController,
-                    tab: const MapEntry(2, 'QueryParams'),
-                    isActive: true),
-                AnimatedTabWidget(
-                    tabController: _requestSettingsController,
-                    tab: const MapEntry(3, 'Body'),
-                    isActive: true),
-              ],
-              onTap: (value) => switch (value) {
-                0 => checkedOption.value = RequestOptionsEnum.auth,
-                1 => checkedOption.value = RequestOptionsEnum.headers,
-                2 => checkedOption.value = RequestOptionsEnum.queryParams,
-                3 => checkedOption.value = RequestOptionsEnum.body,
-                _ => checkedType.value = RequestTypeEnum.get,
+            title: BlocBuilder<HttpRequestFeatureBloc, HttpRequestFeatureState>(
+              builder: (context, state) {
+                return TabBar(
+                  tabAlignment: TabAlignment.start,
+                  indicatorColor: Colors.greenAccent,
+                  splashFactory: NoSplash.splashFactory,
+                  isScrollable: true,
+                  labelPadding: const EdgeInsets.only(
+                    bottom: 12.0,
+                    left: 12.0,
+                    right: 12.0,
+                  ),
+                  unselectedLabelColor: Colors.grey,
+                  controller: _requestSettingsController,
+                  tabs: [
+                    AnimatedTabWidget(
+                      tabController: _requestSettingsController,
+                      tab: const MapEntry(0, 'Basic Auth'),
+                      isActive:
+                          state.userName != null || state.password != null,
+                    ),
+                    AnimatedTabWidget(
+                      tabController: _requestSettingsController,
+                      tab: const MapEntry(1, 'Headers'),
+                      isActive:
+                          state.headers != null && state.headers!.isNotEmpty,
+                    ),
+                    AnimatedTabWidget(
+                      tabController: _requestSettingsController,
+                      tab: const MapEntry(2, 'QueryParams'),
+                      isActive: state.queryParams != null &&
+                          state.queryParams!.isNotEmpty,
+                    ),
+                    AnimatedTabWidget(
+                      tabController: _requestSettingsController,
+                      tab: const MapEntry(3, 'Body'),
+                      isActive: state.body != null && state.body!.isNotEmpty,
+                    ),
+                  ],
+                  onTap: (value) => switch (value) {
+                    0 => checkedOption.value = RequestOptionsEnum.auth,
+                    1 => checkedOption.value = RequestOptionsEnum.headers,
+                    2 => checkedOption.value = RequestOptionsEnum.queryParams,
+                    3 => checkedOption.value = RequestOptionsEnum.body,
+                    _ => checkedType.value = RequestTypeEnum.get,
+                  },
+                );
               },
             ),
           ),
@@ -143,16 +162,24 @@ class _HttpRequestViewState extends State<HttpRequestView>
               delegate: QueryParamsPersistentHeader(
                 ticker: this,
                 mode: value,
+                onBodyEdited: (p0) =>
+                    context.read<HttpRequestFeatureBloc>().add(
+                          SetBodyDataEvent(body: p0),
+                        ),
+                onQueryParamsEditingComplete: (p0, p1) =>
+                    context.read<HttpRequestFeatureBloc>().add(
+                          SetQueryParamsEvent({p0.toString(): p1}),
+                        ),
                 onBaseAuthEdited: (p0, p1) =>
                     context.read<HttpRequestFeatureBloc>().add(
-                          (SetAuthDataEvent(
+                          SetAuthDataEvent(
                             password: p0,
                             userName: p1,
-                          )),
+                          ),
                         ),
                 onEditingComplete: (p0, p1) {
                   context.read<HttpRequestFeatureBloc>().add(
-                        SetDataEvent({p0.toString(): p1}),
+                        SetHeadersEvent({p0.toString(): p1}),
                       );
                 },
               ),
@@ -211,6 +238,8 @@ class _HttpRequestViewState extends State<HttpRequestView>
                   headers: state.headers,
                   password: state.password,
                   userName: state.userName,
+                  queryParams: state.queryParams,
+                  body: 'Error',
                 );
               }
             },

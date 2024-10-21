@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:new_flutter_template/src/theme/app_colors.dart';
 
 class AnimatedTabWidget extends StatefulWidget {
   const AnimatedTabWidget({
@@ -6,11 +7,9 @@ class AnimatedTabWidget extends StatefulWidget {
     required this.tabController,
     required this.tab,
     required this.isActive,
-    this.newValue,
   });
   final TabController tabController;
   final MapEntry tab;
-  final String? newValue;
   final bool isActive;
   @override
   State<AnimatedTabWidget> createState() => __AnimatedTabWidgetState();
@@ -64,45 +63,24 @@ class __AnimatedTabWidgetState extends State<AnimatedTabWidget> {
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: widget.isActive
-              ? BoxDecoration(
-                  color: widget.tab.key == fromIndex
-                      ? Colors.blueGrey
-                      : Colors.blueGrey.withOpacity(.3),
-                  borderRadius: BorderRadius.circular(200),
-                )
-              : BoxDecoration(
-                  color: Colors.blueGrey,
-                  borderRadius: BorderRadius.circular(200),
-                ),
-          child: Row(
-            children: [
-              Text(
-                widget.tab.value,
-                maxLines: 1,
-              ),
-              if (widget.newValue != null)
-                const SizedBox(
-                  width: 10,
-                ),
-              if (widget.newValue != null)
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: (widget.tab.key == toIndex && widget.isActive)
-                        ? Colors.blueGrey
-                        : Colors.blueGrey,
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.newValue!,
-                      maxLines: 1,
-                    ),
-                  ),
-                ),
-            ],
+          decoration: BoxDecoration(
+            color: widget.tab.key == fromIndex
+                ? Colors.blueGrey
+                : Colors.blueGrey.withOpacity(.3),
+            borderRadius: BorderRadius.circular(200),
+            border: widget.isActive
+                ? Border.all(
+                    color: AppColors.amber,
+                    width: 1
+                  )
+                : null,
+          ),
+          child: Opacity(
+            opacity: widget.tab.key == toIndex ? 1 - progress : 1,
+            child: Text(
+              widget.tab.value,
+              maxLines: 1,
+            ),
           ),
         );
       },

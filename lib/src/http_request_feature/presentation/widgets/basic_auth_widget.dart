@@ -33,7 +33,7 @@ class _BasicAuthWidgetState extends State<BasicAuthWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Column(
         children: [
           Expanded(
@@ -46,6 +46,9 @@ class _BasicAuthWidgetState extends State<BasicAuthWidget> {
               onChanged: (newUser) => widget.onBaseAuthEdited
                   .call(newUser, _passwordController.value.text),
             ),
+          ),
+          SizedBox(
+            height: 16,
           ),
           Expanded(
             child: TextField(

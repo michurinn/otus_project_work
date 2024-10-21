@@ -13,6 +13,7 @@ class PostDataEvent extends HttpRequestEvent {
   final Map<String, dynamic> body;
   PostDataEvent(this.url, this.body);
 }
+
 /// Keep the Auth data here
 class SetAuthDataEvent extends HttpRequestEvent {
   final String? userName;
@@ -24,7 +25,16 @@ class SetAuthDataEvent extends HttpRequestEvent {
   });
 }
 
-class SetDataEvent extends HttpRequestEvent {
+/// Keep the Body data here
+class SetBodyDataEvent extends HttpRequestEvent {
+  final String? body;
+
+  SetBodyDataEvent({
+    required this.body,
+  });
+}
+
+class SetHeadersEvent extends HttpRequestEvent {
   /// The information about the headers
   /// Uses the key for determining the uniqueness of the header
   /// To store the key value of the header
@@ -32,5 +42,16 @@ class SetDataEvent extends HttpRequestEvent {
   /// (for example, when entering 'coo' and completing editing and then returning and editing in the cookie field,
   /// both keys could be created)
   final Map<String, Json> parameters;
-  SetDataEvent(this.parameters);
+  SetHeadersEvent(this.parameters);
+}
+
+class SetQueryParamsEvent extends HttpRequestEvent {
+  /// The information about the query parameters
+  /// Uses the key for determining the uniqueness of the parameter
+  /// To store the key value of the parameter
+  /// In another case, there may be collisions when entering from the form
+  /// (for example, when entering 'i' and completing editing and then returning and editing in the id field,
+  /// both keys could be created)
+  final Map<String, Json> parameters;
+  SetQueryParamsEvent(this.parameters);
 }
