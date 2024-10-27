@@ -26,4 +26,8 @@ abstract class HelloPlatform extends PlatformInterface {
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
+
+  Future<bool?> checkNetworkConnectionStatus() {
+    throw UnimplementedError('checkNetworkConnectionStatus() has not been implemented.');
+  }
 }

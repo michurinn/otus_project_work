@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-///import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:new_flutter_template/src/navigator/navigation_state.dart';
 import 'package:new_flutter_template/src/navigator/router.dart';
@@ -28,13 +28,10 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           routerDelegate: AppRouter(state: state),
           localizationsDelegates: const [
-            ///AppLocalizations.delegate,
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('en', ''), // English, no country code
           ],
           theme: ThemeData(
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(

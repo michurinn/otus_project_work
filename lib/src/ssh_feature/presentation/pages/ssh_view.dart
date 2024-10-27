@@ -41,147 +41,149 @@ class _SshViewState extends State<SshView> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text('Ssh test'),
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text('Ssh test'),
+          ),
         ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+        drawer: Drawer(
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: [
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Text('History'),
               ),
-              child: Text('History'),
-            ),
-            ListTile(
-              title: const Text('Request 1'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),
-            ListTile(
-              title: const Text('Request 2'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),
-          ],
+              ListTile(
+                title: const Text('Request 1'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+              ListTile(
+                title: const Text('Request 2'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+            ],
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _controller,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter an url',
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter an url',
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Port No 22'),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Port No 22'),
+                ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _controllerUserName,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter an username',
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _controllerUserName,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter an username',
+                    ),
                   ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _controllerPassword,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter a password',
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _controllerPassword,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter a password',
+                    ),
                   ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    client ??= SSHClient(
-                      await SSHSocket.connect(_controller.value.text, 22),
-                      username: _controllerUserName.value.text,
-                      onPasswordRequest: () => _controllerPassword.value.text,
-                      onAuthenticated: () =>
-                          authSuccess.value = 'SUCCESS: AUTH',
-                    );
-                  },
-                  label: const Icon(
-                    Icons.android_rounded,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      client ??= SSHClient(
+                        await SSHSocket.connect(_controller.value.text, 22),
+                        username: _controllerUserName.value.text,
+                        onPasswordRequest: () => _controllerPassword.value.text,
+                        onAuthenticated: () =>
+                            authSuccess.value = 'SUCCESS: AUTH',
+                      );
+                    },
+                    label: const Icon(
+                      Icons.android_rounded,
+                    ),
                   ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ValueListenableBuilder<String>(
-                  valueListenable: authSuccess,
-                  builder: (context, value, _) => Text(value),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: authSuccess,
+                    builder: (context, value, _) => Text(value),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-          onTap: (value) => switch (value) {
-                0 => (Router.of(context).routerDelegate as AppRouter).goToSsh(),
-                1 => (Router.of(context).routerDelegate as AppRouter).goToSse(),
-                2 => (Router.of(context).routerDelegate as AppRouter).goToApi(),
-                _ => (Router.of(context).routerDelegate as AppRouter).goToSsh(),
-              },
-          currentIndex: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.terminal,
+        bottomNavigationBar: BottomNavigationBar(
+            onTap: (value) => switch (value) {
+                  0 =>
+                    (Router.of(context).routerDelegate as AppRouter).goToSsh(),
+                  1 =>
+                    (Router.of(context).routerDelegate as AppRouter).goToSse(),
+                  2 =>
+                    (Router.of(context).routerDelegate as AppRouter).goToApi(),
+                  _ =>
+                    (Router.of(context).routerDelegate as AppRouter).goToSsh(),
+                },
+            currentIndex: 0,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.terminal,
+                ),
+                label: 'SSh',
               ),
-              label: 'SSh',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.wind_power_sharp,
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.wind_power_sharp,
+                ),
+                label: 'SSe',
               ),
-              label: 'SSe',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.data_object_rounded,
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.data_object_rounded,
+                ),
+                label: 'API',
               ),
-              label: 'API',
-            ),
-          ]),
-    );
-  }
+            ]),
+      );
 }

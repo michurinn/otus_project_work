@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_bloc.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_event.dart';
@@ -31,17 +30,10 @@ class _HttpRequestViewState extends State<HttpRequestView>
   late final TabController _controllerTab;
   late final TextEditingController _controller;
   late final TabController _requestSettingsController;
-  late final BasicMessageChannel c;
   @override
   void initState() {
     super.initState();
-    c = const BasicMessageChannel(
-      'flutter/lifecycle',
-      StringCodec(),
-    );
-    c.send('RESUMED').then(
-          (val) => debugPrint(val),
-        );
+
     _controller =
         TextEditingController(text: 'https://api.restful-api.dev/objects');
     _controllerTab =

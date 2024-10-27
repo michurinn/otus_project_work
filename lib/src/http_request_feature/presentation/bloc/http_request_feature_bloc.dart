@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:hello/hello_method_channel.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -27,6 +28,9 @@ class HttpRequestFeatureBloc
     on<SetAuthDataEvent>(_handleSetAuthDataEvent);
     on<SetBodyDataEvent>(_handleSetBodyDataEvent);
   }
+
+  /// The method for checking Internet connection active status
+  final c = MethodChannelHello();
 
   // Handling Set Basic Auth info
   Future<void> _handleSetAuthDataEvent(
@@ -132,9 +136,19 @@ class HttpRequestFeatureBloc
           ),
         )}'
       };
-      debugPrint(
-        basicAuth.toString(),
-      );
+      if (await c.checkNetworkConnectionStatus() == false) {
+        emit(
+          APIError(
+            headers: state.headers,
+            password: state.password,
+            userName: state.userName,
+            message: 'Please, try your internet connection',
+            queryParams: state.queryParams,
+            body: state.body,
+          ),
+        );
+        return;
+      }
 
       final response = await http.get(
         event.url..addQueryParams(calculatedQueries),
@@ -223,12 +237,26 @@ class HttpRequestFeatureBloc
         basicAuth.toString(),
       );
 
+      if (await c.checkNetworkConnectionStatus() == false) {
+        emit(
+          APIError(
+            headers: state.headers,
+            password: state.password,
+            userName: state.userName,
+            message: 'Please, try your internet connection',
+            queryParams: state.queryParams,
+            body: state.body,
+          ),
+        );
+        return;
+      }
+
       final response = await http.post(
         event.url..addQueryParams(calculatedQueries),
         headers: calculatedHeaders
           ..addAll(basicAuth)
           ..addAll({'content-type': 'application/x-www-form-urlencoded'}),
-        body: jsonDecode(state.body!),
+        body: state.body == null ? null : jsonDecode(state.body!),
       );
 
       if (response.statusCode == 201) {

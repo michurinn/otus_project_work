@@ -3,17 +3,15 @@ extension IsUri on Uri? {
 }
 
 extension AddQueryParams on Uri {
-  Uri addQueryParams(Map<String, dynamic> newQuery) {
-    return Uri(
-      fragment: fragment,
-      host: host,
-      path: path,
-      //pathSegments: pathSegments,
-      port: port,
-      query: query,
-      queryParameters: newQuery,
-      scheme: scheme,
-      userInfo: userInfo,
-    );
-  }
+  Uri addQueryParams(Map<String, dynamic> newQuery) => Uri(
+        fragment: fragment,
+        host: host,
+        path: path,
+        //pathSegments: pathSegments,
+        port: port,
+        query: query,
+        queryParameters: newQuery,
+        scheme: scheme,
+        userInfo: userInfo,
+      );
 }

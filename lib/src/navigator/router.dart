@@ -63,9 +63,7 @@ class AppRouter extends RouterDelegate<NavigationState>
   }
 
   @override
-  Future<bool> popRoute() async {
-    return true;
-  }
+  Future<bool> popRoute() async => true;
 
   @override
   Future<void> setNewRoutePath(configuration) {
@@ -74,8 +72,6 @@ class AppRouter extends RouterDelegate<NavigationState>
   }
 
   @override
-
-  /// TODO: implement currentConfiguration
   get currentConfiguration => state;
 
   @override
@@ -85,8 +81,6 @@ class AppRouter extends RouterDelegate<NavigationState>
   }
 
   @override
-
-  /// TODO: implement navigatorKey
   GlobalKey<NavigatorState>? get navigatorKey => _navigatorKey;
 }
 

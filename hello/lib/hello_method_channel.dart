@@ -14,4 +14,10 @@ class MethodChannelHello extends HelloPlatform {
     final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
   }
+
+  @override
+  Future<bool?> checkNetworkConnectionStatus() async {
+    final connectionStatus = await methodChannel.invokeMethod<bool>('check_connection_status');
+    return connectionStatus;
+  }
 }
