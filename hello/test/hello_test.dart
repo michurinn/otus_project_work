@@ -7,9 +7,13 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockHelloPlatform
     with MockPlatformInterfaceMixin
     implements HelloPlatform {
-
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
+
+  @override
+  Future<bool?> checkNetworkConnectionStatus() async {
+    return false;
+  }
 }
 
 void main() {
@@ -25,5 +29,13 @@ void main() {
     HelloPlatform.instance = fakePlatform;
 
     expect(await helloPlugin.getPlatformVersion(), '42');
+  });
+
+  test('checkInternetCOnnection', () async {
+    Hello helloPlugin = Hello();
+    MockHelloPlatform fakePlatform = MockHelloPlatform();
+    HelloPlatform.instance = fakePlatform;
+
+    expect(await helloPlugin.checkNetworkConnectionStatus(), false);
   });
 }

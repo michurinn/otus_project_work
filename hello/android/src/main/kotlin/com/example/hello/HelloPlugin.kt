@@ -30,9 +30,11 @@ class HelloPlugin: FlutterPlugin, MethodCallHandler {
     if (call.method == "check_connection_status")
     {
       result.success(isInternetAvailable(applicationContext))
+      return;
     }
     if (call.method == "getPlatformVersion") {
       result.success("Android ${android.os.Build.VERSION.RELEASE}")
+      return;
     } else {
       result.notImplemented()
     }
