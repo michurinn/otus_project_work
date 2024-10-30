@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hello/hello_method_channel.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_bloc.dart';
 import 'package:new_flutter_template/src/navigator/navigation_state.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/pages/http_view.dart';
@@ -7,6 +8,7 @@ import 'package:new_flutter_template/src/sse_feature/data/sse_repository/sse_rep
 import 'package:new_flutter_template/src/sse_feature/presentation/bloc/sse_bloc.dart';
 import 'package:new_flutter_template/src/sse_feature/presentation/sse_view.dart';
 import 'package:new_flutter_template/src/ssh_feature/presentation/pages/ssh_view.dart';
+import 'package:http/http.dart' as http;
 
 class AppRouter extends RouterDelegate<NavigationState>
     with PopNavigatorRouterDelegateMixin, ChangeNotifier {
@@ -54,8 +56,11 @@ class AppRouter extends RouterDelegate<NavigationState>
           MyPage(
             key: UniqueKey(),
             child: BlocProvider<HttpRequestFeatureBloc>(
-              create: (context) => HttpRequestFeatureBloc(),
-              child: HttpRequestView(),
+              create: (context) => HttpRequestFeatureBloc(
+                client: http.Client(),
+                internetConnectionChannel: MethodChannelHello(),
+              ),
+              child: const HttpRequestView(),
             ),
           ),
       ],

@@ -6,13 +6,16 @@ import 'dart:convert';
 
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_event.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_state.dart';
+import 'package:new_flutter_template/src/share/extesnions/string_with_json_format_extension.dart';
 import 'package:new_flutter_template/src/share/extesnions/uri_extension.dart';
 import 'package:new_flutter_template/src/share/typedefs/typedef_json.dart';
 
 class HttpRequestFeatureBloc
     extends Bloc<HttpRequestEvent, HttpRequestFeatureState> {
-  HttpRequestFeatureBloc()
-      : super(
+  HttpRequestFeatureBloc({
+    required this.internetConnectionChannel,
+    required this.client,
+  }) : super(
           const APIInitial(
             headers: null,
             userName: null,
@@ -30,7 +33,9 @@ class HttpRequestFeatureBloc
   }
 
   /// The method for checking Internet connection active status
-  final c = MethodChannelHello();
+  final MethodChannelHello internetConnectionChannel;
+
+  final http.Client client;
 
   // Handling Set Basic Auth info
   Future<void> _handleSetAuthDataEvent(
@@ -136,7 +141,8 @@ class HttpRequestFeatureBloc
           ),
         )}'
       };
-      if (await c.checkNetworkConnectionStatus() == false) {
+      if (await internetConnectionChannel.checkNetworkConnectionStatus() ==
+          false) {
         emit(
           APIError(
             headers: state.headers,
@@ -150,7 +156,7 @@ class HttpRequestFeatureBloc
         return;
       }
 
-      final response = await http.get(
+      final response = await client.get(
         event.url..addQueryParams(calculatedQueries),
         headers: calculatedHeaders..addAll(basicAuth),
       );
@@ -161,7 +167,11 @@ class HttpRequestFeatureBloc
           APISuccess(
             headers: state.headers,
             statusCode: response.statusCode,
-            data: data.toString(),
+            data: data is Json
+                ? data.jsonToString()
+                : data is List
+                    ? (data.whereType<Json>()).toList().formatThisJsonList()
+                    : data.toString(),
             statusReason: response.reasonPhrase,
             password: state.password,
             userName: state.userName,
@@ -237,7 +247,8 @@ class HttpRequestFeatureBloc
         basicAuth.toString(),
       );
 
-      if (await c.checkNetworkConnectionStatus() == false) {
+      if (await internetConnectionChannel.checkNetworkConnectionStatus() ==
+          false) {
         emit(
           APIError(
             headers: state.headers,
@@ -251,7 +262,7 @@ class HttpRequestFeatureBloc
         return;
       }
 
-      final response = await http.post(
+      final response = await client.post(
         event.url..addQueryParams(calculatedQueries),
         headers: calculatedHeaders
           ..addAll(basicAuth)
