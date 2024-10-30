@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:new_flutter_template/src/sse_feature/domain/i_sse_repository.dart';
 
@@ -11,7 +11,6 @@ import 'package:new_flutter_template/src/sse_feature/presentation/bloc/sse_state
 class SseBloc extends Bloc<SseEvent, SseState> {
   SseBloc({required this.sseRepository}) : super(SseInitialState()) {
     on<SseSubscribeEvent>(_handleSubscribeRequest);
-    on<SseUnsubscribeEvent>(_handlrUnsubscribeRequest);
     on<SseDataRecievedEvent>(_handleDataRecievedRequest);
     on<SseCancelAllConnectionsEvent>(_handleCloseAllConnectionsRequest);
   }
@@ -26,7 +25,7 @@ class SseBloc extends Bloc<SseEvent, SseState> {
     try {
       sseStream = sseRepository.getSseStream(
         type: event.sseRequestType,
-        url: event.url,
+        uri: event.uri,
         header: event.header,
       );
       sseStreamSubscription = sseStream?.listen(
@@ -36,8 +35,6 @@ class SseBloc extends Bloc<SseEvent, SseState> {
           ),
         ),
         onDone: () {
-          /// TODO(me): onDone callback really doesnt work
-          debugPrint('StreamSubscription has been closed');
           emit(
             SseConnectionClosedState(
               sseModel: state is SseSubscribedState
@@ -46,9 +43,9 @@ class SseBloc extends Bloc<SseEvent, SseState> {
             ),
           );
         },
-        onError: (e,s)=>  emit(
-            SseErrorState('The error has occured into SSe stream'),
-          ),
+        onError: (e, s) => emit(
+          SseErrorState('The error has occured into SSe stream'),
+        ),
       );
     } catch (e) {
       emit(SseErrorState('Error: $e'));
@@ -68,32 +65,44 @@ class SseBloc extends Bloc<SseEvent, SseState> {
     }
   }
 
-  // Handling Unsubscribe request
-  Future<void> _handlrUnsubscribeRequest(
-      SseUnsubscribeEvent event, Emitter<SseState> emit) async {
-    try {
-      sseRepository.cancelSseStream();
-      if (sseStreamSubscription != null) {
-        await sseStreamSubscription!.cancel();
-      }
-    } catch (e) {
-      emit(SseErrorState('Error: $e'));
-    }
-  }
-
   // Handling Data Recieved request
   Future<void> _handleDataRecievedRequest(
       SseDataRecievedEvent event, Emitter<SseState> emit) async {
-    emit(
-      SseSubscribedState(
-        sseModel: event.sseModel,
-      ),
-    );
+    final List<SSEModel>? resultingList = switch (state) {
+      SseInitialState() => [event.sseModel],
+      SseLoadingState() => [event.sseModel],
+      SseSubscribedState() => (state as SseSubscribedState).sseModel == null
+          ? [event.sseModel]
+          : List.from((state as SseSubscribedState).sseModel!)
+        ..add(event.sseModel),
+      SseErrorState() => [event.sseModel],
+      SseConnectionClosedState() => null,
+    };
+
+    if (resultingList != null) {
+      emit(
+        SseSubscribedState(
+          sseModel: resultingList,
+        ),
+      );
+    }
   }
 
   @override
   Future<void> close() async {
+    sseRepository.cancelSseStream();
     await sseStreamSubscription?.cancel();
     return super.close();
+  }
+
+  @override
+  void onChange(Change<SseState> change) {
+    log(change.nextState.runtimeType.toString(),
+        name: 'Sse bloc has been changed');
+    if (change.nextState is SseSubscribedState) {
+      log((change.nextState as SseSubscribedState).sseModel.toString(),
+          name: 'list, Sse bloc has been changed');
+    }
+    super.onChange(change);
   }
 }

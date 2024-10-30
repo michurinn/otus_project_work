@@ -6,12 +6,12 @@ sealed class SseEvent {}
 
 class SseSubscribeEvent extends SseEvent {
   final SSERequestType sseRequestType;
-  final String url;
+  final Uri uri;
   final Map<String, String> header;
 
   SseSubscribeEvent({
     required this.sseRequestType,
-    required this.url,
+    required this.uri,
     required this.header,
   });
 }
@@ -26,9 +26,4 @@ class SseDataRecievedEvent extends SseEvent {
 
 class SseCancelAllConnectionsEvent extends SseEvent {
   SseCancelAllConnectionsEvent();
-}
-
-/// Unsubscribe from one avaiable sse connection
-class SseUnsubscribeEvent extends SseEvent {
-  SseUnsubscribeEvent();
 }

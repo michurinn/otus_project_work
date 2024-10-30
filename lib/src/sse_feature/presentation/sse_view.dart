@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
 import 'package:new_flutter_template/src/navigator/router.dart';
 import 'package:new_flutter_template/src/share/extesnions/uri_extension.dart';
+import 'package:new_flutter_template/src/share/widgets/animated_sse_message_widget.dart';
 import 'package:new_flutter_template/src/sse_feature/presentation/bloc/sse_bloc.dart';
 import 'package:new_flutter_template/src/sse_feature/presentation/bloc/sse_event.dart';
 import 'package:new_flutter_template/src/sse_feature/presentation/bloc/sse_state.dart';
@@ -45,14 +47,14 @@ class SseView extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () async {
                     final uri = Uri.tryParse(_controller.value.text);
-                    if (!uri.isValid) {
+                    if (uri != null && !uri.isValid) {
                       debugPrint('${_controller.value.text} is not valid text');
                     } else {
                       try {
                         context.read<SseBloc>().add(
                               SseSubscribeEvent(
                                 sseRequestType: SSERequestType.GET,
-                                url: uri!.origin,
+                                uri: uri!,
                                 header: {},
                               ),
                             );
@@ -86,18 +88,18 @@ class SseView extends StatelessWidget {
             SliverFillRemaining(child: BlocBuilder<SseBloc, SseState>(
               builder: (context, state) {
                 return switch (state) {
-                  SseSubscribedState(:final sseModel) => Column(
-                      children: [
-                        Text(
-                          sseModel?.id ?? '',
-                        ),
-                        Text(
-                          sseModel?.event ?? '',
-                        ),
-                        Text(
-                          sseModel?.data ?? '',
-                        ),
-                      ],
+                  SseSubscribedState(:final sseModel) => SingleChildScrollView(
+                      child: sseModel == null
+                          ? const Text('No data here...')
+                          : Column(
+                              children: sseModel
+                                  .map(
+                                    (model) => AnimatedSseMessageWidget(
+                                      message: model,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
                     ),
                   SseConnectionClosedState(:final sseModel) => sseModel == null
                       ? const Text(
@@ -109,13 +111,13 @@ class SseView extends StatelessWidget {
                               'The connection with Sse has been closed, the last data is:',
                             ),
                             Text(
-                              sseModel.id ?? '',
+                              sseModel.lastOrNull?.id ?? '',
                             ),
                             Text(
-                              sseModel.event ?? '',
+                              sseModel.lastOrNull?.event ?? '',
                             ),
                             Text(
-                              sseModel.data ?? '',
+                              sseModel.lastOrNull?.data ?? '',
                             ),
                           ],
                         ),

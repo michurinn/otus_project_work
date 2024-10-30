@@ -5,7 +5,7 @@ import 'package:flutter_client_sse/flutter_client_sse.dart';
 abstract class ISseRepository {
   Stream<SSEModel> getSseStream({
     required SSERequestType type,
-    required String url,
+    required Uri uri,
     required Map<String, String> header,
   });
 

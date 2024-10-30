@@ -8,13 +8,13 @@ class SseRepository implements ISseRepository {
   @override
   Stream<SSEModel> getSseStream({
     required SSERequestType type,
-    required String url,
+    required Uri uri,
     required Map<String, String> header,
   }) {
     ///GET REQUEST
     return OtusSSEClient.subscribeToSSE(
       method: type,
-      url: url,
+      uri: uri,
       header: header,
     );
   }

@@ -8,7 +8,7 @@ class SseInitialState extends SseState {}
 class SseLoadingState extends SseState {}
 
 class SseSubscribedState extends SseState {
-  final SSEModel? sseModel;
+  final List<SSEModel>? sseModel;
   SseSubscribedState({
     required this.sseModel,
   });
@@ -20,7 +20,7 @@ class SseErrorState extends SseState {
 }
 
 class SseConnectionClosedState extends SseState {
-  final SSEModel? sseModel;
+  final List<SSEModel>? sseModel;
   SseConnectionClosedState({
     required this.sseModel,
   });

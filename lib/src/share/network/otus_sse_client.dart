@@ -19,7 +19,7 @@ class OtusSSEClient {
   /// [streamController] is required to persist the stream from the old connection
   static void _retryConnection(
       {required SSERequestType method,
-      required String url,
+      required Uri uri,
       required Map<String, String> header,
       required StreamController<SSEModel> streamController,
       Map<String, dynamic>? body}) {}
@@ -34,7 +34,7 @@ class OtusSSEClient {
   /// Returns a [Stream] of [SSEModel] representing the SSE events.
   static Stream<SSEModel> subscribeToSSE(
       {required SSERequestType method,
-      required String url,
+      required Uri uri,
       required Map<String, String> header,
       StreamController<SSEModel>? oldStreamController,
       Map<String, dynamic>? body}) {
@@ -49,7 +49,7 @@ class OtusSSEClient {
         _client = http.Client();
         var request = http.Request(
           method == SSERequestType.GET ? "GET" : "POST",
-          Uri.https(url),
+          uri,
         );
 
         /// Adding headers to the request
@@ -111,7 +111,7 @@ class OtusSSEClient {
                   default:
                     _retryConnection(
                       method: method,
-                      url: url,
+                      uri: uri,
                       header: header,
                       streamController: streamController,
                     );
@@ -120,7 +120,7 @@ class OtusSSEClient {
               onError: (e, s) {
                 _retryConnection(
                   method: method,
-                  url: url,
+                  uri: uri,
                   header: header,
                   body: body,
                   streamController: streamController,
@@ -130,7 +130,7 @@ class OtusSSEClient {
         }, onError: (e, s) {
           _retryConnection(
             method: method,
-            url: url,
+            uri: uri,
             header: header,
             body: body,
             streamController: streamController,
@@ -139,7 +139,7 @@ class OtusSSEClient {
       } catch (e) {
         _retryConnection(
           method: method,
-          url: url,
+          uri: uri,
           header: header,
           body: body,
           streamController: streamController,
