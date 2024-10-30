@@ -237,25 +237,47 @@ class _HttpRequestViewState extends State<HttpRequestView>
             },
             builder: (context, state) {
               return state is APISuccess
-                  ? Column(
-                      children: [
-                        Text(
-                          state.statusCode.toString(),
+                  ? SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Status code ${state.statusCode}',
+                              style: const TextStyle(
+                                color: Colors.amber,
+                                fontSize: 18,
+                              ),
+                            ),
+                            Text(
+                              state.statusReason ?? '',
+                            ),
+                            Text(
+                              state.data,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          state.statusReason ?? '',
-                        ),
-                        Text(
-                          state.data,
-                        ),
-                      ],
+                      ),
                     )
-                  : Column(
-                      children: [
-                        Text(
-                          (state as APIError).message,
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              (state as APIError).message,
+                              style: const TextStyle(
+                                color: Colors.amber,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     );
             },
           ))
