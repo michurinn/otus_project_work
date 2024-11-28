@@ -1,1 +1,0 @@
- /Users/iosdev/2/otus_project_work/new_flutter_template/.dart_tool/flutter_gen/gen_l10n/app_localizations_en.dart /Users/iosdev/2/otus_project_work/new_flutter_template/.dart_tool/flutter_gen/gen_l10n/app_localizations.dart:  /Users/iosdev/2/otus_project_work/new_flutter_template/l10n.yaml /Users/iosdev/2/otus_project_work/new_flutter_template/lib/src/localization/app_en.arb
