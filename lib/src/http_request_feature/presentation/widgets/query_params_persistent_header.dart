@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/rendering/sliver_persistent_header.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_bloc.dart';
+import 'package:new_flutter_template/src/http_request_feature/presentation/bloc/http_request_feature_state.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/widgets/basic_auth_widget.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/widgets/params_list_widget.dart';
 import 'package:new_flutter_template/src/http_request_feature/presentation/widgets/requet_body_widget.dart';
@@ -26,20 +29,35 @@ class QueryParamsPersistentHeader implements SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return switch (mode) {
-      RequestOptionsEnum.auth => BasicAuthWidget(
-          onBaseAuthEdited: (p0, p1) => onBaseAuthEdited?.call(p0, p1),
-        ),
-      RequestOptionsEnum.body => RequestBodyWidget(
-          onEditingComplete: (data) => onBodyEdited?.call(data),
-        ),
-      RequestOptionsEnum.headers => ParamsListWidget(
-          onEditingComplete: (data) => onEditingComplete(1, data),
-        ),
-      RequestOptionsEnum.queryParams => ParamsListWidget(
-          onEditingComplete: (data) => onQueryParamsEditingComplete(2, data),
-        ),
-    };
+    return BlocBuilder<HttpRequestFeatureBloc, HttpRequestFeatureState>(
+      builder: (context, state) {
+        return switch (mode) {
+          RequestOptionsEnum.auth => BasicAuthWidget(
+              onBaseAuthEdited: (p0, p1) => onBaseAuthEdited?.call(p0, p1),
+            ),
+          RequestOptionsEnum.body => RequestBodyWidget(
+              onEditingComplete: (data) => onBodyEdited?.call(data),
+            ),
+          RequestOptionsEnum.headers => ParamsListWidget(
+              onEditingComplete: (data) => onEditingComplete(1,
+                  {data.keys.first.toString(): data.values.first.toString()}),
+              initialList: state.queryParams?['1'] ?? {},
+            ),
+          RequestOptionsEnum.queryParams => ParamsListWidget(
+              onEditingComplete: (data) => onQueryParamsEditingComplete(
+                2,
+                data.map(
+                  (key, value) => MapEntry(
+                    key,
+                    value.toString(),
+                  ),
+                ),
+              ),
+              initialList: state.queryParams?['0'] ?? {},
+            ),
+        };
+      },
+    );
   }
 
   @override

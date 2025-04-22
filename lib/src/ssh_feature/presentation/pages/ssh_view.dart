@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:typed_data';
+
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter/material.dart';
 import 'package:new_flutter_template/src/navigator/router.dart';
@@ -16,13 +20,16 @@ class _SshViewState extends State<SshView> {
   late final TextEditingController _controller;
   late final TextEditingController _controllerUserName;
   late final TextEditingController _controllerPassword;
+  late final TextEditingController _controllerCommand;
   final ValueNotifier<String> authSuccess = ValueNotifier('');
   SSHClient? client;
+  SSHSession? shell;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: 'tty.sdf.org');
+    _controllerCommand = TextEditingController();
     _controllerUserName = TextEditingController(text: 'michurinnn');
     _controllerPassword = TextEditingController(text: '96NnU9pfsalMNg');
   }
@@ -36,6 +43,7 @@ class _SshViewState extends State<SshView> {
     _controller.dispose();
     _controllerUserName.dispose();
     _controllerPassword.dispose();
+    _controllerCommand.dispose();
 
     super.dispose();
   }
@@ -127,16 +135,61 @@ class _SshViewState extends State<SshView> {
                   padding: const EdgeInsets.all(8.0),
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      client ??= SSHClient(
-                        await SSHSocket.connect(_controller.value.text, 22),
-                        username: _controllerUserName.value.text,
-                        onPasswordRequest: () => _controllerPassword.value.text,
-                        onAuthenticated: () =>
-                            authSuccess.value = 'SUCCESS: AUTH',
-                      );
+                      if (client == null) {
+                        client ??= SSHClient(
+                          await SSHSocket.connect(_controller.value.text, 22),
+                          username: _controllerUserName.value.text,
+                          onPasswordRequest: () =>
+                              _controllerPassword.value.text,
+                          onAuthenticated: () =>
+                              authSuccess.value = 'SUCCESS: AUTH',
+                        );
+                        shell = await client!.shell();
+                        shell!.stdout.listen(
+                          (data) => log(
+                              String.fromCharCodes(
+                                Uint8List.fromList(data),
+                              ),
+                              name: 'stdout stream'),
+                        );
+                        shell!.stderr.listen(
+                          (data) => log(
+                              String.fromCharCodes(
+                                Uint8List.fromList(data),
+                              ),
+                              name: 'stderr stream'),
+                        );
+                      }
                     },
                     label: const Icon(
                       Icons.android_rounded,
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _controllerCommand,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter a command',
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final uints = const Utf8Encoder()
+                          .convert(_controllerCommand.value.text);
+                      shell?.stdin.add(uints);
+                    },
+                    label: const Icon(
+                      Icons.woo_commerce_outlined,
                     ),
                   ),
                 ),
