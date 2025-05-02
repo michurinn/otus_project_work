@@ -10,16 +10,31 @@ environment:
   sdk: '>=3.4.1 <4.0.0'
 
 dependencies:
+  bloc: ^8.1.4
+  dartssh2: ^2.8.2
+  equatable: ^2.0.5
   flutter:
     sdk: flutter
+  flutter_bloc: ^8.1.6
+  flutter_client_sse: ^2.0.3
   flutter_localizations:
     sdk: flutter
+  freezed: ^2.5.2
+  http: ^1.2.2
+  provider: ^6.1.2
+  hello: 
+    path: hello
+  mocktail: ^1.0.4
+  bloc_test: ^9.1.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
 
   flutter_lints: ^3.0.0
+  build_runner: ^2.4.11
 
 flutter:
   uses-material-design: true

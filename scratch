@@ -1,0 +1,165 @@
+// APIState sealed class manages various API request states
+
+import 'package:equatable/equatable.dart';
+import 'package:new_flutter_template/src/share/typedefs/typedef_json.dart';
+
+sealed class HttpRequestFeatureState extends Equatable {
+  final Map<String, Json>? headers;
+  final Map<String, Json>? queryParams;
+  final String? userName;
+  final String? password;
+
+  const HttpRequestFeatureState({
+    required this.headers,
+    required this.password,
+    required this.userName,
+    required this.queryParams,
+  });
+}
+
+class APIInitial extends HttpRequestFeatureState {
+  const APIInitial({
+    required super.headers,
+    required super.password,
+    required super.userName,
+    required super.queryParams,
+  });
+
+  APIInitial copyWith({
+    final Map<String, Json>? headers,
+    final Map<String, Json>? queryParams,
+    final String? userName,
+    final String? password,
+  }) {
+    return APIInitial(
+      headers: headers ?? this.headers,
+      password: password ?? this.password,
+      userName: userName ?? this.userName,
+      queryParams: queryParams ?? this.queryParams,
+    );
+  }
+
+  @override
+  List<Object?> get props => [headers];
+}
+
+class APILoading extends HttpRequestFeatureState {
+  const APILoading({
+    required super.headers,
+    required super.password,
+    required super.userName,
+    required super.queryParams,
+  });
+
+  APILoading copyWith({
+    final Map<String, Json>? headers,
+    final Map<String, Json>? queryParams,
+    final String? userName,
+    final String? password,
+  }) {
+    return APILoading(
+      headers: headers ?? this.headers,
+      password: password ?? this.password,
+      userName: userName ?? this.userName,
+      queryParams: queryParams ?? this.queryParams,
+    );
+  }
+
+  @override
+  List<Object?> get props => [headers];
+}
+
+class APIReady extends HttpRequestFeatureState {
+  const APIReady({
+    required super.headers,
+    required super.password,
+    required super.userName,
+    required super.queryParams,
+  });
+
+  APIReady copyWith({
+    final Map<String, Json>? headers,
+    final Map<String, Json>? queryParams,
+    final String? userName,
+    final String? password,
+  }) {
+    return APIReady(
+      headers: headers ?? this.headers,
+      password: password ?? this.password,
+      userName: userName ?? this.userName,
+      queryParams: queryParams ?? this.queryParams,
+    );
+  }
+
+  @override
+  List<Object?> get props => [headers];
+}
+
+class APISuccess extends HttpRequestFeatureState {
+  final int statusCode;
+  final String? statusReason;
+  final String data;
+  const APISuccess({
+    required this.statusCode,
+    required this.statusReason,
+    required this.data,
+    required super.headers,
+    required super.password,
+    required super.userName,
+    required super.queryParams,
+  });
+
+  APISuccess copyWith({
+    final Map<String, Json>? headers,
+    final Map<String, Json>? queryParams,
+    final String? userName,
+    final String? password,
+    final int? statusCode,
+    final String? statusReason,
+    final String? data,
+  }) {
+    return APISuccess(
+      headers: headers ?? this.headers,
+      password: password ?? this.password,
+      userName: userName ?? this.userName,
+      queryParams: queryParams ?? this.queryParams,
+      statusCode: statusCode ?? this.statusCode,
+      statusReason: statusReason ?? this.statusReason,
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [statusCode, statusReason, data];
+}
+
+class APIError extends HttpRequestFeatureState {
+  final String message;
+
+  const APIError({
+    required super.headers,
+    required this.message,
+    required super.password,
+    required super.userName,
+    required super.queryParams,
+  });
+
+  APIError copyWith({
+    final Map<String, Json>? headers,
+    final Map<String, Json>? queryParams,
+    final String? userName,
+    final String? password,
+    final String? message,
+  }) {
+    return APIError(
+      headers: headers ?? this.headers,
+      password: password ?? this.password,
+      userName: userName ?? this.userName,
+      queryParams: queryParams ?? this.queryParams,
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [message];
+}
